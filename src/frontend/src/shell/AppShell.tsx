@@ -5,6 +5,8 @@ import { type TemaShell, aplicarTema, carregarTema, salvarTema } from './tema'
 interface AppShellProps {
   children: ReactNode
   densidade?: DensidadeShell
+  /** apresentacao: home vocacional, sem o rail de navegacao. */
+  entrada?: 'apresentacao'
   sessaoAtiva?: boolean
   onRetomarLaboratorio?: () => void
 }
@@ -13,7 +15,13 @@ interface AppShellProps {
  * Casca unica da Academia e da Workstation. Guarda o tema, expoe o contexto do shell e reserva
  * o espaco do rail (desktop) e da barra inferior (celular). A navegacao fica em BarraSuperior.
  */
-export function AppShell({ children, densidade = 'editorial', sessaoAtiva = false, onRetomarLaboratorio }: AppShellProps) {
+export function AppShell({
+  children,
+  densidade = 'editorial',
+  entrada,
+  sessaoAtiva = false,
+  onRetomarLaboratorio,
+}: AppShellProps) {
   const [tema, setTema] = useState<TemaShell>(carregarTema)
 
   useEffect(() => {
@@ -28,7 +36,7 @@ export function AppShell({ children, densidade = 'editorial', sessaoAtiva = fals
 
   return (
     <ContextoShell.Provider value={valor}>
-      <div className="app-shell" data-density={densidade}>
+      <div className="app-shell" data-density={densidade} data-entrada={entrada}>
         {children}
       </div>
     </ContextoShell.Provider>

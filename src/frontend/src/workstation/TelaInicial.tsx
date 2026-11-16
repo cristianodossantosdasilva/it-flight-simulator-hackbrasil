@@ -34,6 +34,8 @@ interface Props {
   onAtualizarAcademia: (updater: (prev: EstadoAcademia) => EstadoAcademia) => void
   /** Visao aberta ao montar (o shell usa ao voltar do laboratorio para Aulas, Caderno ou Mentor). */
   visaoInicial?: VisaoAcademia
+  /** Reabre a apresentação (home vocacional). Sem esta função o atalho não aparece. */
+  onRever?: () => void
 }
 
 const ETAPAS_MISSAO_ZERO = [
@@ -66,6 +68,7 @@ export function TelaInicial({
   estadoAcademia,
   onAtualizarAcademia,
   visaoInicial = 'home',
+  onRever,
 }: Props) {
   const shell = useShell()
   const [visao, setVisao] = useState<VisaoAcademia>(visaoInicial)
@@ -249,6 +252,11 @@ export function TelaInicial({
                 Academia de suporte de TI. Estude, pratique chamados simulados no laboratório e veja suas decisões na
                 Caixa-Preta, com credencial assinada em ECDSA P-256.
               </p>
+              {onRever && (
+                <button type="button" className="btn btn-ghost btn-sm home-rever" onClick={onRever}>
+                  Rever a apresentação
+                </button>
+              )}
             </div>
 
             {(erro || (ocupado && avisoColdStart)) && (

@@ -10,9 +10,12 @@ import {
   type EstadoAcademia,
   carregarEstadoAcademia,
   nivelPorCenarioId,
+  nivelPorId,
   responderMentor,
   salvarEstadoAcademia,
 } from './educacao/catalogoEducacional'
+import { CHAVE_SESSOES_SALVAS, marcarHomeVista } from './home/catalogoVocacional'
+import { HomeVocacional } from './home/HomeVocacional'
 import { MissionGuide } from './lab/MissionGuide'
 import { roteiroDoCenario } from './lab/roteiros'
 import { SplitLabWorkspace } from './lab/SplitLabWorkspace'
@@ -107,7 +110,7 @@ function obterProximaDicaMissao(
   return 'Atendimento concluído! Confira o relatório do Juiz 360º e seu Currículo Vivo.'
 }
 
-const STORAGE_SESSOES_KEY = 'itfs_jornada_sessoes'
+const STORAGE_SESSOES_KEY = CHAVE_SESSOES_SALVAS
 
 function carregarSessaoIdsSalvas(): string[] {
   try {
@@ -131,7 +134,9 @@ function salvarSessaoId(id: string): string[] {
   return atualizados
 }
 
-function WorkstationInner() {
+function WorkstationInner({ apresentacao = false }: { apresentacao?: boolean }) {
+  // A home vocacional abre só quando o main.tsx pede (visitante novo). Os testes e o fluxo antigo seguem direto.
+  const [apresentando, setApresentando] = useState(apresentacao)
   const [emLaboratorio, setEmLaboratorio] = useState(false)
   const [visaoAcademia, setVisaoAcademia] = useState<VisaoAcademia>('home')
   const [estadoAcademia, setEstadoAcademia] = useState<EstadoAcademia>(() => carregarEstadoAcademia())
@@ -247,6 +252,8 @@ function WorkstationInner() {
       setSessaoId(criada.sessaoId)
       setSessao(proj)
       setEmLaboratorio(true)
+      // Em caso de erro a home continua aberta e mostra o aviso; com sucesso o laboratório assume a tela.
+      setApresentando(false)
       setReplay(null)
       setNivel1Passos({ politica: false, token: false, recusado: false })
       setHistoricoTerminal([])
@@ -362,6 +369,40 @@ function WorkstationInner() {
 
   const sessaoAtiva = Boolean(sessaoId && sessao)
 
+  function sairDaApresentacao() {
+    marcarHomeVista()
+    setApresentando(false)
+  }
+
+  /** Mesmo efeito do Primeiro Voo: abre o laboratório do nível Estagiário. Com turno em memória, só retoma. */
+  async function irDiretoAoLaboratorio() {
+    marcarHomeVista()
+    if (sessaoId && sessao) {
+      setApresentando(false)
+      setEmLaboratorio(true)
+      return
+    }
+    await iniciarSessao(nivelPorId('estagiario').cenarioId)
+  }
+
+  if (apresentando) {
+    return (
+      <AppShell
+        densidade="editorial"
+        entrada="apresentacao"
+        sessaoAtiva={sessaoAtiva}
+        onRetomarLaboratorio={retomarLaboratorio}
+      >
+        <HomeVocacional
+          ocupado={ocupado}
+          erro={aviso}
+          onComecar={sairDaApresentacao}
+          onIrDireto={() => void irDiretoAoLaboratorio()}
+        />
+      </AppShell>
+    )
+  }
+
   if (!sessaoId || !sessao || !emLaboratorio) {
     return (
       <AppShell densidade="editorial" sessaoAtiva={sessaoAtiva} onRetomarLaboratorio={retomarLaboratorio}>
@@ -376,6 +417,7 @@ function WorkstationInner() {
           onAtualizarCarreira={(nome) => void atualizarResumoCarreira(undefined, nome)}
           estadoAcademia={estadoAcademia}
           onAtualizarAcademia={atualizarEstadoAcademia}
+          onRever={() => setApresentando(true)}
         />
       </AppShell>
     )
@@ -704,10 +746,10 @@ function WorkstationInner() {
   )
 }
 
-export function App() {
+export function App({ apresentacao = false }: { apresentacao?: boolean }) {
   return (
     <ErrorBoundary>
-      <WorkstationInner />
+      <WorkstationInner apresentacao={apresentacao} />
     </ErrorBoundary>
   )
 }

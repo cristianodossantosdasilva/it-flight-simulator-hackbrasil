@@ -8,12 +8,13 @@ import '@fontsource/jetbrains-mono/latin-400.css'
 import '@fontsource/jetbrains-mono/latin-500.css'
 import './index.css'
 import App from './App.tsx'
+import { deveMostrarHome } from './home/catalogoVocacional'
 import { aplicarTema, carregarTema } from './shell/tema'
 
 aplicarTema(carregarTema())
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <App apresentacao={deveMostrarHome()} />
   </StrictMode>,
 )

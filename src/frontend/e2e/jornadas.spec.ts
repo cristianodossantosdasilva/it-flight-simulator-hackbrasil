@@ -2,6 +2,11 @@ import { expect, test } from '@playwright/test'
 import { TEXTOS_WORKSTATION as T } from '../src/textos/workstation'
 
 test.describe('IT Flight Simulator — Jornadas E2E (E4)', () => {
+  // Estas jornadas começam na Tela Inicial. A home vocacional tem a própria spec (home.spec.ts).
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => window.localStorage.setItem('itfs_home_vista', '1'))
+  })
+
   test('W10: sem overflow horizontal em 375, 768 e 1280px e início N1 por teclado', async ({ page }) => {
     for (const width of [375, 768, 1280]) {
       await page.setViewportSize({ width, height: 900 })

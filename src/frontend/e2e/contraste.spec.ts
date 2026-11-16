@@ -28,6 +28,8 @@ const LARGURA_MINIMA_DESKTOP = 768
 async function preparar(page: Page, tema: Tema) {
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.addInitScript((valor) => window.localStorage.setItem('itfs_theme', valor), tema)
+  // A medição de estudo e laboratório parte da Tela Inicial. A home vocacional é medida em home.visual.spec.ts.
+  await page.addInitScript(() => window.localStorage.setItem('itfs_home_vista', '1'))
   await page.goto('/')
   await expect(page.getByRole('heading', { name: 'IT Flight Simulator', level: 1 })).toBeVisible()
   await expect(page.locator('html')).toHaveAttribute('data-theme', tema)
